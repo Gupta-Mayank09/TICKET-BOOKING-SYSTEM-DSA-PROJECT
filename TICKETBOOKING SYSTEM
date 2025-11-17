@@ -1,0 +1,186 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 100
+
+// Structure for each customer
+typedef struct
+{
+    int ticket_no;
+    char name[50];
+} Customer;
+
+typedef struct
+{
+    Customer data[MAX];
+    int front, rear;
+} Queue;
+
+void init(Queue *q)
+{
+    q->front = q->rear = -1;
+}
+
+int isEmpty(Queue *q)
+{
+    return q->front == -1;
+}
+
+int isFull(Queue *q)
+{
+    return q->rear == MAX - 1;
+}
+
+// Enqueue (Book Ticket)
+void enqueue(Queue *q, char name[], int ticket_no)
+{
+    if (isFull(q))
+    {
+        printf("\nQueue is FULL! No more bookings allowed.\n");
+        return;
+    }
+
+    if (q->front == -1)
+        q->front = 0;
+
+    q->rear++;
+    q->data[q->rear].ticket_no = ticket_no;
+    strcpy(q->data[q->rear].name, name);
+
+    printf("\nTicket Booked Successfully! Ticket No: %d\n", ticket_no);
+}
+
+// Dequeue (Serve Next Customer)
+void dequeue(Queue *q)
+{
+    if (isEmpty(q))
+    {
+        printf("\nNo customers in queue!\n");
+        return;
+    }
+
+    printf("\nCustomer Served: %s (Ticket No: %d)\n",
+           q->data[q->front].name,
+           q->data[q->front].ticket_no);
+
+    if (q->front == q->rear)
+    {
+        q->front = q->rear = -1; // queue becomes empty
+    }
+    else
+    {
+        q->front++;
+    }
+}
+
+// Cancel ticket (remove specific person)
+void cancelTicket(Queue *q, int ticket_no)
+{
+    if (isEmpty(q))
+    {
+        printf("\nQueue is empty! No ticket to cancel.\n");
+        return;
+    }
+
+    int i, found = 0;
+
+    for (i = q->front; i <= q->rear; i++)
+    {
+        if (q->data[i].ticket_no == ticket_no)
+        {
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        printf("\nTicket not found!\n");
+        return;
+    }
+
+    // Shift left
+    for (int j = i; j < q->rear; j++)
+    {
+        q->data[j] = q->data[j + 1];
+    }
+    q->rear--;
+
+    if (q->rear < q->front)
+        q->front = q->rear = -1;
+
+    printf("\nTicket %d cancelled successfully!\n", ticket_no);
+}
+
+void display(Queue *q)
+{
+    if (isEmpty(q))
+    {
+        printf("\nQueue is Empty!\n");
+        return;
+    }
+
+    printf("\n--- Current Ticket Queue ---\n");
+    for (int i = q->front; i <= q->rear; i++)
+    {
+        printf("Ticket No: %d | Name: %s\n",
+               q->data[i].ticket_no,
+               q->data[i].name);
+    }
+}
+
+// Main Function
+int main()
+{
+    Queue q;
+    init(&q);
+
+    int choice, ticket_no = 1;
+    char name[50];
+    int cancel_no;
+
+    while (1)
+    {
+        printf("\n====== Ticket Booking System (Using Queue) ======\n");
+        printf("1. Book Ticket\n");
+        printf("2. Serve Next Customer\n");
+        printf("3. Cancel Ticket\n");
+        printf("4. Display Queue\n");
+        printf("5. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            printf("Enter Customer Name: ");
+            scanf("%s", name);
+            enqueue(&q, name, ticket_no++);
+            break;
+
+        case 2:
+            dequeue(&q);
+            break;
+
+        case 3:
+            printf("Enter Ticket No to Cancel: ");
+            scanf("%d", &cancel_no);
+            cancelTicket(&q, cancel_no);
+            break;
+
+        case 4:
+            display(&q);
+            break;
+
+        case 5:
+            printf("\nThank you! Exiting...\n");
+            exit(0);
+
+        default:
+            printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
